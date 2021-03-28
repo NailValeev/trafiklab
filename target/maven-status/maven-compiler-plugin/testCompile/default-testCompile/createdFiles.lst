@@ -1,2 +1,3 @@
 xyz/valeev/trafiklab/TrafiklabApplicationTest.class
 xyz/valeev/trafiklab/health/TrafiklabApplicationHealthTest.class
+xyz/valeev/trafiklab/validation/TrafiklabApplicationValidationTest.class

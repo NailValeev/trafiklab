@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import xyz.valeev.trafiklab.model.Line;
+import xyz.valeev.trafiklab.model.StopPoint;
 import xyz.valeev.trafiklab.service.BusLinesService;
 
 import javax.validation.ConstraintViolationException;
@@ -51,17 +52,17 @@ public class BusLinesController {
 
     @GetMapping("/v1/lines")
     public List<Line> getBusLinesV1() {
-        return service.getLines();
+        return service.getBusLinesV1();
     }
 
     @GetMapping("/v1/lines/{lineNumber}")
-    public List<Line> getBusLine(@PathVariable("lineNumber") @Min(1) int lineNumber) {
-        return service.getLines();
+    public List<StopPoint> getBusLineStopsV1(@PathVariable("lineNumber") @Min(1) int lineNumber) {
+        return service.getBusLineStopsV1();
     }
 
     @GetMapping("/v1/lines/top/")
     public List<Line> getTopBusLinesV1() {
-        return service.getLines();
+        return service.getTopBusLinesV1();
     }
 
 }

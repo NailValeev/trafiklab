@@ -37,13 +37,13 @@ public class Line {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Line hotel = (Line) o;
-        return Objects.equals(lineNumber, hotel.lineNumber) &&
-                Objects.equals(lineDesignation, hotel.lineDesignation) &&
-                Objects.equals(defaultTransportMode, hotel.defaultTransportMode) &&
-                Objects.equals(defaultTransportModeCode, hotel.defaultTransportModeCode) &&
-                Objects.equals(lastModifiedUtcDateTime, hotel.lastModifiedUtcDateTime) &&
-                Objects.equals(existsFromDate, hotel.existsFromDate);
+        Line line = (Line) o;
+        return Objects.equals(lineNumber, line.lineNumber) &&
+                Objects.equals(lineDesignation, line.lineDesignation) &&
+                Objects.equals(defaultTransportMode, line.defaultTransportMode) &&
+                Objects.equals(defaultTransportModeCode, line.defaultTransportModeCode) &&
+                Objects.equals(lastModifiedUtcDateTime, line.lastModifiedUtcDateTime) &&
+                Objects.equals(existsFromDate, line.existsFromDate);
     }
 
     @Override

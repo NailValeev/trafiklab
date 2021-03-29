@@ -1,5 +1,6 @@
 package xyz.valeev.trafiklab.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -51,7 +52,7 @@ public class BusLinesController {
     }
 
     @GetMapping("/v1/lines")
-    public List<Line> getBusLinesV1() {
+    public String getBusLinesV1() throws JsonProcessingException {
         return service.getBusLinesV1();
     }
 

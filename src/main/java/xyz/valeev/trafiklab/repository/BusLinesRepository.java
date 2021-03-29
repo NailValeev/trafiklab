@@ -36,13 +36,46 @@ public class BusLinesRepository {
         System.out.print("allBusLinesStr" + allBusLinesStr);
         List<BusLine> allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
 
-        System.out.println("allBusLines" + allBusLines.get(0).getLineNumber() + allBusLines.get(0).getExistsFromDate());
+        System.out.print("***************************");
+        String journeyPatterns = fetchJourneyPatterns();
+        System.out.print("journeyPatterns" + journeyPatterns);
+
+        System.out.print("***************************");
+        String stops = fetchStops();
+        System.out.print("stops" + stops);
+
     }
 
     private String fetchBusLines() throws JsonProcessingException {
         URI lineUri = UriComponentsBuilder
                 .fromUri(trafiklabBaseUri)
                 .queryParam("model", Models.line)
+                .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
+                .build()
+                .toUri();
+
+                String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
+                JsonNode jsonNode = objectMapper.readTree(responseBody);
+                return  jsonNode.get("ResponseData").get("Result").toPrettyString();
+    }
+
+    private String fetchJourneyPatterns() throws JsonProcessingException {
+        URI lineUri = UriComponentsBuilder
+                .fromUri(trafiklabBaseUri)
+                .queryParam("model", Models.jour)
+                .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
+                .build()
+                .toUri();
+
+                String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
+                JsonNode jsonNode = objectMapper.readTree(responseBody);
+                return  jsonNode.get("ResponseData").get("Result").toPrettyString();
+    }
+
+    private String fetchStops() throws JsonProcessingException {
+        URI lineUri = UriComponentsBuilder
+                .fromUri(trafiklabBaseUri)
+                .queryParam("model", Models.stop)
                 .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
                 .build()
                 .toUri();

@@ -8,13 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import xyz.valeev.trafiklab.model.BusLine;
-import xyz.valeev.trafiklab.model.Codes;
-import xyz.valeev.trafiklab.model.Models;
+import xyz.valeev.trafiklab.model.*;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class BusLinesRepository {
@@ -33,17 +32,27 @@ public class BusLinesRepository {
     @PostConstruct
     private void serveAllBusLines() throws JsonProcessingException {
         String allBusLinesStr = fetchBusLines();
-        System.out.print("allBusLinesStr" + allBusLinesStr);
+        System.out.println("allBusLinesStr" + allBusLinesStr);
         List<BusLine> allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
 
-        System.out.print("***************************");
+        System.out.println("***************************");
         String journeyPatterns = fetchJourneyPatterns();
-        System.out.print("journeyPatterns" + journeyPatterns);
+        List<JourneyPattern> allPatterns = objectMapper.readValue(journeyPatterns, new TypeReference<>() { });
+        System.out.println("journeyPatterns" + journeyPatterns);
 
-        System.out.print("***************************");
-        String stops = fetchStops();
-        System.out.print("stops" + stops);
+        System.out.println("***************************");
+        String allStopsStr = fetchStops();
+        System.out.println("allStopsStr" + allStopsStr);
+        List<StopPoint> allStops = objectMapper.readValue(allStopsStr, new TypeReference<>() { });
+        System.out.println("allStops size: " + allStops.size());
+        System.out.println("Filtering stops...");
+        List<StopPoint> busStops = allStops
+                .stream()
+                .filter(stop -> stop.getStopAreaTypeCode().equals(Codes.BUS.getStopAreaTypeCode())).
+                collect(Collectors.toList());
+        System.out.println("busStops size:" + busStops.size());
 
+        //Generation of the data sets should be done on start, too
     }
 
     private String fetchBusLines() throws JsonProcessingException {

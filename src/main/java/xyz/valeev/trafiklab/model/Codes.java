@@ -14,6 +14,9 @@ public enum Codes {
     public String getDefaultTransportModeCode(){
         return defaultTransportModeCode;
     }
+    public String getStopAreaTypeCode(){
+        return stopAreaTypeCode;
+    }
 
     Codes(String defaultTransportModeCode, String stopAreaTypeCode) {
         this.defaultTransportModeCode = defaultTransportModeCode;

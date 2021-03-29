@@ -7,7 +7,7 @@ import xyz.valeev.trafiklab.model.StopPoint;
 import java.util.List;
 
 public interface IBusLinesService {
-    public String getBusLinesV1() throws JsonProcessingException;
-    public List<StopPoint> getBusLineStopsV1();
+    public List<BusLine> getBusLinesV1() throws JsonProcessingException;
+    public List<StopPoint> getBusLineStopsV1(int lineNumber);
     public List<BusLine> getTopBusLinesV1();
 }

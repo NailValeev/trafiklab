@@ -25,6 +25,11 @@ public class BusLinesController {
     ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
         return new ResponseEntity<>("Bad request, validation error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>("Bad request, validation error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 
     private final BusLinesService service;
 
@@ -52,13 +57,13 @@ public class BusLinesController {
     }
 
     @GetMapping("/v1/lines")
-    public String getBusLinesV1() throws JsonProcessingException {
+    public List<BusLine> getBusLinesV1() throws JsonProcessingException {
         return service.getBusLinesV1();
     }
 
     @GetMapping("/v1/lines/{lineNumber}")
     public List<StopPoint> getBusLineStopsV1(@PathVariable("lineNumber") @Min(1) int lineNumber) {
-        return service.getBusLineStopsV1();
+        return service.getBusLineStopsV1(lineNumber);
     }
 
     @GetMapping("/v1/lines/top/")

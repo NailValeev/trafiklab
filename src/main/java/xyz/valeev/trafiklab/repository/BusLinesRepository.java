@@ -13,12 +13,17 @@ import xyz.valeev.trafiklab.model.*;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
 public class BusLinesRepository {
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private List<BusLine> allBusLines;
+    private Map<Integer, List<JourneyPattern>> journeyPatternsMap;
+    private List<StopPoint> busStops;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private final RestTemplate restTemplate;
     private final URI trafiklabBaseUri;
@@ -33,12 +38,16 @@ public class BusLinesRepository {
     private void serveAllBusLines() throws JsonProcessingException {
         String allBusLinesStr = fetchBusLines();
         System.out.println("allBusLinesStr" + allBusLinesStr);
-        List<BusLine> allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
+        allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
 
         System.out.println("***************************");
         String journeyPatterns = fetchJourneyPatterns();
         List<JourneyPattern> allPatterns = objectMapper.readValue(journeyPatterns, new TypeReference<>() { });
         System.out.println("journeyPatterns" + journeyPatterns);
+
+        journeyPatternsMap = allPatterns
+                .parallelStream()
+                .collect(Collectors.groupingBy(JourneyPattern::getLineNumber));
 
         System.out.println("***************************");
         String allStopsStr = fetchStops();
@@ -46,7 +55,8 @@ public class BusLinesRepository {
         List<StopPoint> allStops = objectMapper.readValue(allStopsStr, new TypeReference<>() { });
         System.out.println("allStops size: " + allStops.size());
         System.out.println("Filtering stops...");
-        List<StopPoint> busStops = allStops
+
+        busStops = allStops
                 .stream()
                 .filter(stop -> stop.getStopAreaTypeCode().equals(Codes.BUS.getStopAreaTypeCode())).
                 collect(Collectors.toList());
@@ -85,7 +95,6 @@ public class BusLinesRepository {
         URI lineUri = UriComponentsBuilder
                 .fromUri(trafiklabBaseUri)
                 .queryParam("model", Models.stop)
-                .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
                 .build()
                 .toUri();
 
@@ -94,8 +103,16 @@ public class BusLinesRepository {
                 return  jsonNode.get("ResponseData").get("Result").toPrettyString();
     }
 
-    public String returnBusLines() throws JsonProcessingException {
-        return "fooboo";
+    public List<BusLine> getAllBusLines() {
+        return allBusLines;
+    }
+
+    public Map<Integer, List<JourneyPattern>> getJourneyPatternsMap() {
+        return journeyPatternsMap;
+    }
+
+    public List<StopPoint> getBusStops(){
+        return busStops;
     }
 
 }

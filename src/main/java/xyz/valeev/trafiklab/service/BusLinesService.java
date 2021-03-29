@@ -52,7 +52,8 @@ public class BusLinesService implements IBusLinesService{
     public List<BusLine> getTopBusLinesV1() {
         List<BusLine> busLines = repository.getAllBusLines();
         Map<Integer, List<JourneyPattern>> journeyPatternsMap = repository.getJourneyPatternsMap();
-
+        // This return statement can be refactored
+        // In fact, it is not large, but looks tremendous because indentation with new lines :)
         return journeyPatternsMap.entrySet()
                 .stream()
                 .sorted(byListSize.reversed())

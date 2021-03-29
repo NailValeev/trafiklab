@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: xyz.valeev.trafiklab.TrafiklabApplicationTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 22.262 s - in xyz.valeev.trafiklab.TrafiklabApplicationTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.179 s - in xyz.valeev.trafiklab.TrafiklabApplicationTest

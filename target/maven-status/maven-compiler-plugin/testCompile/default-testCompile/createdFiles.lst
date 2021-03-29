@@ -1,4 +1,4 @@
 xyz/valeev/trafiklab/TrafiklabApplicationTest.class
 xyz/valeev/trafiklab/health/TrafiklabApplicationHealthTest.class
 xyz/valeev/trafiklab/repository/TrafiklabApplicationRepositoryTest.class
-xyz/valeev/trafiklab/validation/TrafiklabApplicationValidationTest.class
+xyz/valeev/trafiklab/controller/TrafiklabApplicationControllerTest.class

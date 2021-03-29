@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import xyz.valeev.trafiklab.TrafiklabApplication;
 import xyz.valeev.trafiklab.model.*;
 
 import javax.annotation.PostConstruct;
@@ -71,7 +70,7 @@ public class BusLinesRepository {
                 .build()
                 .toUri();
                 // It is possible to create the response entity class and use instead of String
-                // But I realy like JSON :)
+                // But I really like JSON :)
                 String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
                 JsonNode jsonNode = objectMapper.readTree(responseBody);
                 return  jsonNode.get("ResponseData").get("Result").toPrettyString();

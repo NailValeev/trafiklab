@@ -3,7 +3,7 @@ package xyz.valeev.trafiklab.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import xyz.valeev.trafiklab.model.Line;
+import xyz.valeev.trafiklab.model.BusLine;
 import xyz.valeev.trafiklab.model.StopPoint;
 import xyz.valeev.trafiklab.repository.BusLinesRepository;
 
@@ -20,7 +20,7 @@ public class BusLinesService implements IBusLinesService{
 
     @Override
     public String getBusLinesV1() throws JsonProcessingException {
-        return repository.fetchBusLines();
+        return repository.returnBusLines();
     }
 
     @Override
@@ -29,7 +29,7 @@ public class BusLinesService implements IBusLinesService{
     }
 
     @Override
-    public List<Line> getTopBusLinesV1() {
+    public List<BusLine> getTopBusLinesV1() {
         return null;
     }
 }

@@ -7,7 +7,7 @@
 3. The data should be automatically gathered from API for each run of the application.
 4. One end-point should return the top 10 bus lines in Stockholm area with most bus stops on
    their route.
-5. The other endpoint should return a list of every bus stop of the bus line
+5. The other endpoint should return a list of every bus stop of the bus busLine
        provided.
    
 ### Non-functional requirements

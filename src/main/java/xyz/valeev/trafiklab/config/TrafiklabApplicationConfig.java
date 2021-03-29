@@ -20,7 +20,7 @@ public class TrafiklabApplicationConfig  {
     private final String JSON_PATH = "/LineData.json";
 
     @Bean
-    public URI baseUri(@Value("${key:not set}") String key) {
+    public URI trafiklabBaseUri(@Value("${api.key:not set}") String key) {
         return UriComponentsBuilder.newInstance()
                 .scheme("https").host(TRAFIKLAB_BASE_URL)
                 .path(JSON_PATH).queryParam("key", key).build().toUri();

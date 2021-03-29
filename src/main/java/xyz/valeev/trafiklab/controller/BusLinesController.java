@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import xyz.valeev.trafiklab.model.Line;
+import xyz.valeev.trafiklab.model.BusLine;
 import xyz.valeev.trafiklab.model.StopPoint;
 import xyz.valeev.trafiklab.service.BusLinesService;
 
@@ -62,7 +62,7 @@ public class BusLinesController {
     }
 
     @GetMapping("/v1/lines/top/")
-    public List<Line> getTopBusLinesV1() {
+    public List<BusLine> getTopBusLinesV1() {
         return service.getTopBusLinesV1();
     }
 

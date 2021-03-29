@@ -1,7 +1,13 @@
 xyz/valeev/trafiklab/TrafiklabApplication.class
-xyz/valeev/trafiklab/service/IBusLinesService.class
-xyz/valeev/trafiklab/service/BusLinesService.class
+xyz/valeev/trafiklab/repository/BusLinesRepository$1.class
 xyz/valeev/trafiklab/controller/BusLinesController.class
-xyz/valeev/trafiklab/model/Line.class
+xyz/valeev/trafiklab/repository/BusLinesRepository.class
+xyz/valeev/trafiklab/model/StopPoint.class
 xyz/valeev/trafiklab/controller/BusLinesController$HealthCheckInformation.class
 xyz/valeev/trafiklab/config/TrafiklabApplicationConfig.class
+xyz/valeev/trafiklab/model/Models.class
+xyz/valeev/trafiklab/model/Codes.class
+xyz/valeev/trafiklab/service/IBusLinesService.class
+xyz/valeev/trafiklab/service/BusLinesService.class
+xyz/valeev/trafiklab/model/Foo.class
+xyz/valeev/trafiklab/model/BusLine.class

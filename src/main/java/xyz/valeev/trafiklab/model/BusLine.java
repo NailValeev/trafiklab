@@ -6,9 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.Objects;
-
 import static org.apache.commons.lang3.Validate.notBlank;
-import static org.apache.commons.lang3.Validate.notNull;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
@@ -32,27 +30,11 @@ public class BusLine {
             @JsonProperty("DefaultTransportMode") final String defaultTransportMode,
             @JsonProperty("LastModifiedUtcDateTime")final String lastModifiedUtcDateTime,
             @JsonProperty("ExistsFromDate")final String existsFromDate) {
-        this.lineNumber = notNull(lineNumber);
+        this.lineNumber = lineNumber;
         this.lineDesignation = notBlank(lineDesignation);
         this.defaultTransportMode = defaultTransportMode;
         this.lastModifiedUtcDateTime = notBlank(lastModifiedUtcDateTime);
         this.existsFromDate = notBlank(existsFromDate);
     }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BusLine busLine = (BusLine) o;
-        return Objects.equals(lineNumber, busLine.lineNumber) &&
-                Objects.equals(lineDesignation, busLine.lineDesignation) &&
-                Objects.equals(defaultTransportMode, busLine.defaultTransportMode) &&
-                Objects.equals(lastModifiedUtcDateTime, busLine.lastModifiedUtcDateTime) &&
-                Objects.equals(existsFromDate, busLine.existsFromDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(lineNumber, lineDesignation, defaultTransportMode, lastModifiedUtcDateTime, existsFromDate);
-    }
+    // No equals and hashcode because added Lombok
 }

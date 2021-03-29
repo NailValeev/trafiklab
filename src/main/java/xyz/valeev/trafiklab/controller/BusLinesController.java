@@ -50,7 +50,8 @@ public class BusLinesController {
             return version;
         }
     }
-
+    // spring-boot-starter-actuator can set up health checks, but it is my common practice to create
+    // such endpoints (useful for AWS ECS Task definitions, smoke testing in the pipeline etc)
     @GetMapping("/health")
     public HealthCheckInformation getHealthCheckMsg() {
         return new HealthCheckInformation(pomVersion);

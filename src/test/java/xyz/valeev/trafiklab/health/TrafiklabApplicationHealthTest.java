@@ -2,12 +2,10 @@ package xyz.valeev.trafiklab.health;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -46,7 +44,6 @@ public class TrafiklabApplicationHealthTest {
     @Test
     public void health_check_should_return_version_number() throws Exception {
         MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-        System.out.println(result.getResponse());
 
         JSONAssert.assertEquals(
                 "{Version: " + expectedPomVersion + "}",

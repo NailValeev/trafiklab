@@ -1,9 +1,9 @@
-/Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/model/Foo.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/TrafiklabApplication.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/config/TrafiklabApplicationConfig.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/model/StopPoint.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/service/BusLinesService.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/service/IBusLinesService.java
+/Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/model/JourneyPattern.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/controller/BusLinesController.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/model/BusLine.java
 /Users/nail/Documents/repos/trafiklab/src/main/java/xyz/valeev/trafiklab/model/Models.java

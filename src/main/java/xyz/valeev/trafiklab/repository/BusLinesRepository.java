@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import xyz.valeev.trafiklab.TrafiklabApplication;
 import xyz.valeev.trafiklab.model.*;
 
 import javax.annotation.PostConstruct;
@@ -18,12 +21,14 @@ import java.util.stream.Collectors;
 
 @Repository
 public class BusLinesRepository {
+    private static final Logger LOGGER= LoggerFactory.getLogger(BusLinesRepository.class);
 
     private List<BusLine> allBusLines;
     private Map<Integer, List<JourneyPattern>> journeyPatternsMap;
     private List<StopPoint> busStops;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private final RestTemplate restTemplate;
     private final URI trafiklabBaseUri;
@@ -37,34 +42,27 @@ public class BusLinesRepository {
     @PostConstruct
     private void serveAllBusLines() throws JsonProcessingException {
         String allBusLinesStr = fetchBusLines();
-        System.out.println("allBusLinesStr" + allBusLinesStr);
         allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
 
-        System.out.println("***************************");
         String journeyPatterns = fetchJourneyPatterns();
         List<JourneyPattern> allPatterns = objectMapper.readValue(journeyPatterns, new TypeReference<>() { });
-        System.out.println("journeyPatterns" + journeyPatterns);
 
         journeyPatternsMap = allPatterns
-                .parallelStream()
+                .stream()
                 .collect(Collectors.groupingBy(JourneyPattern::getLineNumber));
 
-        System.out.println("***************************");
         String allStopsStr = fetchStops();
-        System.out.println("allStopsStr" + allStopsStr);
         List<StopPoint> allStops = objectMapper.readValue(allStopsStr, new TypeReference<>() { });
-        System.out.println("allStops size: " + allStops.size());
-        System.out.println("Filtering stops...");
 
         busStops = allStops
                 .stream()
                 .filter(stop -> stop.getStopAreaTypeCode().equals(Codes.BUS.getStopAreaTypeCode())).
                 collect(Collectors.toList());
-        System.out.println("busStops size:" + busStops.size());
 
-        //Generation of the data sets should be done on start, too
+        LOGGER.info("Application repository initiated");
     }
 
+    // It is possible to DRY those fetching methods, but it is my habit from microservices world :)
     private String fetchBusLines() throws JsonProcessingException {
         URI lineUri = UriComponentsBuilder
                 .fromUri(trafiklabBaseUri)
@@ -72,7 +70,8 @@ public class BusLinesRepository {
                 .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
                 .build()
                 .toUri();
-
+                // It is possible to create the response entity class and use instead of String
+                // But I realy like JSON :)
                 String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
                 JsonNode jsonNode = objectMapper.readTree(responseBody);
                 return  jsonNode.get("ResponseData").get("Result").toPrettyString();
@@ -85,7 +84,6 @@ public class BusLinesRepository {
                 .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
                 .build()
                 .toUri();
-
                 String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
                 JsonNode jsonNode = objectMapper.readTree(responseBody);
                 return  jsonNode.get("ResponseData").get("Result").toPrettyString();

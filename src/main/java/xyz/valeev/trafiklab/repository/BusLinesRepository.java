@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -22,82 +23,141 @@ import java.util.stream.Collectors;
 public class BusLinesRepository {
     private static final Logger LOGGER= LoggerFactory.getLogger(BusLinesRepository.class);
 
+    private RepositoryResponse repositoryState =
+            new RepositoryResponse(RepositoryCodes.SUCCESS.getCode(), "");
+
     private List<BusLine> allBusLines;
     private Map<Integer, List<JourneyPattern>> journeyPatternsMap;
     private List<StopPoint> busStops;
 
+    private final String TRAFIKLAB_BASE_URL = "api.sl.se/api2";
+    private final String JSON_PATH = "LineData.json";
+
+    private URI trafiklabUri;
+
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final RestTemplate restTemplate;
-    private final URI trafiklabBaseUri;
+    @Autowired
+    private RestTemplate commonRestTemplate;
 
     @Autowired
-    public BusLinesRepository(RestTemplate restTemplate, URI trafiklabBaseUri) {
-        this.restTemplate = restTemplate;
-        this.trafiklabBaseUri = trafiklabBaseUri;
+    String apiKey;
+
+    // public because will be used in tests to genrate infalid URIs
+    public URI trafiklabUriResolver(String key, String model) {
+        return UriComponentsBuilder.newInstance()
+                .scheme("https").host(TRAFIKLAB_BASE_URL)
+                .path(JSON_PATH)
+                .queryParam("key", key)
+                .queryParam("model", Models.line)
+                .build().toUri();
+    }
+
+    // public because will be used in tests to genrate infalid URIs
+    public URI trafiklabUriResolver(String key, String model, String mode) {
+        return UriComponentsBuilder
+                .fromUri(trafiklabUriResolver(key, model))
+                .queryParam("DefaultTransportModeCode", mode)
+                .build().toUri();
+    }
+
+    private void processFetchedReaponse (RepositoryResponse response){
+        if (response.getStatusCode() != RepositoryCodes.SUCCESS.getCode()){
+            repositoryState.setStatusCode(RepositoryCodes.FAIL.getCode());
+            repositoryState.setBody(repositoryState.getBody() + response.getBody());
+        }
     }
 
     @PostConstruct
     private void serveAllBusLines() throws JsonProcessingException {
-        String allBusLinesStr = fetchBusLines();
-        allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
 
-        String journeyPatterns = fetchJourneyPatterns();
-        List<JourneyPattern> allPatterns = objectMapper.readValue(journeyPatterns, new TypeReference<>() { });
+        // Data fetching
+        RepositoryResponse allBusLinesResponse = fetchBusLines();
+        RepositoryResponse journeyPatternsResponse = fetchJourneyPatterns();
+        RepositoryResponse allStopsResponse = fetchStops();
 
-        journeyPatternsMap = allPatterns
-                .stream()
-                .collect(Collectors.groupingBy(JourneyPattern::getLineNumber));
+        // Define repository state
+        processFetchedReaponse(allBusLinesResponse);
+        processFetchedReaponse(journeyPatternsResponse);
+        processFetchedReaponse(allStopsResponse);
 
-        String allStopsStr = fetchStops();
-        List<StopPoint> allStops = objectMapper.readValue(allStopsStr, new TypeReference<>() { });
+        // Data processing
+        if (repositoryState.getStatusCode() == RepositoryCodes.SUCCESS.getCode()) {
 
-        busStops = allStops
-                .stream()
-                .filter(stop -> stop.getStopAreaTypeCode().equals(Codes.BUS.getStopAreaTypeCode())).
-                collect(Collectors.toList());
+            try{
+                String allBusLinesStr = allBusLinesResponse.getBody();
+                String journeyPatternsStr = journeyPatternsResponse.getBody();
+                String allStopsStr = allStopsResponse.getBody();
 
-        LOGGER.info("Application repository initiated");
+                allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
+
+                List<JourneyPattern> allPatterns = objectMapper.readValue(journeyPatternsStr, new TypeReference<>() { });
+                journeyPatternsMap = allPatterns
+                        .stream()
+                        .collect(Collectors.groupingBy(JourneyPattern::getLineNumber));
+
+                List<StopPoint> allStops = objectMapper.readValue(allStopsStr, new TypeReference<>() { });
+                busStops = allStops
+                        .stream()
+                        .filter(stop -> stop.getStopAreaTypeCode().equals(Codes.BUS.getStopAreaTypeCode())).
+                        collect(Collectors.toList());
+
+                LOGGER.info("Application repository initiated");
+            } catch (JsonProcessingException jpe) {
+                repositoryState.setStatusCode(RepositoryCodes.FAIL.getCode());
+                repositoryState.setBody("Unable to process Trafiklab data");
+            }
+            LOGGER.info("Repository successfully initiated and populated with fetched data!");
+        } else {
+            LOGGER.error("Repository was not initiated! Bean created to start application.");
+        }
     }
 
-    // It is possible to DRY those fetching methods, but it is my habit from microservices world :)
-    private String fetchBusLines() throws JsonProcessingException {
-        URI lineUri = UriComponentsBuilder
-                .fromUri(trafiklabBaseUri)
-                .queryParam("model", Models.line)
-                .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
-                .build()
-                .toUri();
-                // It is possible to create the response entity class and use instead of String
-                // But I really like JSON :)
-                String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
+    // Don't throw from here, repository should be initialized even for all the tea in China! :)
+    private RepositoryResponse fetchTrafiklabData(URI uri) {
+        String body = "";
+        int code = RepositoryCodes.SUCCESS.getCode();
+
+        ResponseEntity<String> response = commonRestTemplate.getForEntity(uri, String.class);
+        if (response.getStatusCode().is2xxSuccessful()){
+            String responseBody = response.getBody();
+            try {
                 JsonNode jsonNode = objectMapper.readTree(responseBody);
-                return  jsonNode.get("ResponseData").get("Result").toPrettyString();
+                if (!jsonNode.get("StatusCode").toString().equals("0")) {
+                    code = RepositoryCodes.FAIL.getCode();
+                    body = "Unable to fetch data from Trafiklab, " + jsonNode.get("Message");
+                } else {
+                    body = jsonNode.get("ResponseData").get("Result").toPrettyString();
+                }
+            } catch (NullPointerException npe){
+                code = RepositoryCodes.FAIL.getCode();
+                body = "Unable to process data from Trafiklab, invalid JSON schema";
+            } catch (JsonProcessingException jpe){
+                code = RepositoryCodes.FAIL.getCode();
+                body = "Unable to process data from Trafiklab";
+            }
+        } else {
+            code = RepositoryCodes.FAIL.getCode();
+            body = "Unable to fetch data from Trafiklab, error: " + response.getStatusCode();
+        }
+        return new RepositoryResponse(code, body);
     }
 
-    private String fetchJourneyPatterns() throws JsonProcessingException {
-        URI lineUri = UriComponentsBuilder
-                .fromUri(trafiklabBaseUri)
-                .queryParam("model", Models.jour)
-                .queryParam("DefaultTransportModeCode", Codes.BUS.getDefaultTransportModeCode())
-                .build()
-                .toUri();
-                String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
-                JsonNode jsonNode = objectMapper.readTree(responseBody);
-                return  jsonNode.get("ResponseData").get("Result").toPrettyString();
+    private RepositoryResponse fetchBusLines() {
+        return fetchTrafiklabData(trafiklabUriResolver(apiKey, String.valueOf(Models.line), Codes.BUS.getDefaultTransportModeCode()));
     }
 
-    private String fetchStops() throws JsonProcessingException {
-        URI lineUri = UriComponentsBuilder
-                .fromUri(trafiklabBaseUri)
-                .queryParam("model", Models.stop)
-                .build()
-                .toUri();
+    private RepositoryResponse fetchJourneyPatterns() {
+        return fetchTrafiklabData(trafiklabUriResolver(apiKey, String.valueOf(Models.jour), Codes.BUS.getDefaultTransportModeCode()));
+    }
 
-                String responseBody = restTemplate.getForEntity(lineUri, String.class).getBody();
-                JsonNode jsonNode = objectMapper.readTree(responseBody);
-                return  jsonNode.get("ResponseData").get("Result").toPrettyString();
+    private RepositoryResponse fetchStops() {
+        return fetchTrafiklabData(trafiklabUriResolver(apiKey, String.valueOf(Models.jour)));
+    }
+
+    public RepositoryResponse getRepositoryState() {
+        return repositoryState;
     }
 
     public List<BusLine> getAllBusLines() {

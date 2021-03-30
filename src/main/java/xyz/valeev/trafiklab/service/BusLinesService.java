@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import xyz.valeev.trafiklab.model.BusLine;
 import xyz.valeev.trafiklab.model.JourneyPattern;
+import xyz.valeev.trafiklab.model.RepositoryResponse;
 import xyz.valeev.trafiklab.model.StopPoint;
 import xyz.valeev.trafiklab.repository.BusLinesRepository;
 
@@ -24,6 +25,11 @@ public class BusLinesService implements IBusLinesService{
     @Autowired
     public BusLinesService(BusLinesRepository repository) {
         this.repository = repository;
+    }
+
+    @Override
+    public RepositoryResponse getRepositoryState () {
+        return repository.getRepositoryState();
     }
 
     @Override

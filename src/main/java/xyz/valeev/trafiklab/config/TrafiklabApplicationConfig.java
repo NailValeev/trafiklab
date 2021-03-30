@@ -16,17 +16,14 @@ import java.net.URI;
 @SpringBootConfiguration
 @EnableWebMvc
 public class TrafiklabApplicationConfig  {
+    @Bean
+    String apiKey(@Value("${api.key:not set}") String key){
+        return key;
+    }
 
     @Bean
-    public URI trafiklabBaseUri(@Value("${api.key:not set}") String key) {
-        var JSON_PATH = "LineData.json";
-        var TRAFIKLAB_BASE_URL = "api.sl.se/api2";
-        return UriComponentsBuilder.newInstance()
-                .scheme("https").host(TRAFIKLAB_BASE_URL)
-                .path(JSON_PATH).queryParam("key", key).build().toUri();
-    }
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+    public RestTemplate commonRestTemplate(RestTemplateBuilder builder){
+        // I don't want to customize, let it be default
         return builder.build();
     }
 

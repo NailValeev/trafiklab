@@ -1,6 +1,8 @@
 package xyz.valeev.trafiklab.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,8 @@ import java.util.List;
 @RequestMapping("/api/bus/")
 public class BusLinesController {
 
+    private static final Logger LOGGER= LoggerFactory.getLogger(BusLinesController.class);
+
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
@@ -36,12 +40,12 @@ public class BusLinesController {
     @ExceptionHandler(TrafiklabApiException.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     ResponseEntity<String> handleTrafiklabApiException(TrafiklabApiException e) {
-        return new ResponseEntity<>("External API error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("External API error: " + e.getMessage(), HttpStatus.BAD_GATEWAY);
     }
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     ResponseEntity<String> handleAnyException(Exception e) {
-        return new ResponseEntity<>("Internal server error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>("Internal server error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private final BusLinesService service;
@@ -67,6 +71,7 @@ public class BusLinesController {
     private void checkRepositoryState () throws TrafiklabApiException {
         RepositoryResponse response = service.getRepositoryState();
         if (response.getStatusCode() != RepositoryCodes.SUCCESS.getCode()){
+            LOGGER.error("Repository error " + response.getBody());
             throw new TrafiklabApiException(response.getBody());
         }
     }

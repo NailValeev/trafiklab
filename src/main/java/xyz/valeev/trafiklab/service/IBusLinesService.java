@@ -11,7 +11,7 @@ import java.util.List;
 public interface IBusLinesService {
     RepositoryResponse getRepositoryState();
 
-    public List<BusLine> getBusLinesV1() throws JsonProcessingException;
-    public List<StopPoint> getBusLineStopsV1(int lineNumber);
-    public List<BusLine> getTopBusLinesV1();
+    List<BusLine> getBusLinesV1() throws JsonProcessingException;
+    List<StopPoint> getBusLineStopsV1(int lineNumber);
+    List<BusLine> getTopBusLinesV1();
 }

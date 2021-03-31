@@ -44,17 +44,17 @@ public class BusLinesRepository {
     @Autowired
     String apiKey;
 
-    // public because will be used in tests to genrate infalid URIs
+    // public because will be used in tests to generate invalid URIs
     public URI trafiklabUriResolver(String key, String model) {
         return UriComponentsBuilder.newInstance()
                 .scheme("https").host(TRAFIKLAB_BASE_URL)
                 .path(JSON_PATH)
                 .queryParam("key", key)
-                .queryParam("model", Models.line)
+                .queryParam("model", model)
                 .build().toUri();
     }
 
-    // public because will be used in tests to genrate infalid URIs
+    // public because will be used in tests to generate invalid URIs
     public URI trafiklabUriResolver(String key, String model, String mode) {
         return UriComponentsBuilder
                 .fromUri(trafiklabUriResolver(key, model))
@@ -69,6 +69,7 @@ public class BusLinesRepository {
         }
     }
 
+    // Don't throw from here, repository should be initialized even for all the tea in China! :)
     @PostConstruct
     private void serveAllBusLines() throws JsonProcessingException {
 
@@ -91,35 +92,42 @@ public class BusLinesRepository {
                 String allStopsStr = allStopsResponse.getBody();
 
                 allBusLines = objectMapper.readValue(allBusLinesStr, new TypeReference<>() { });
+                LOGGER.info("Bus lines data form Trafiklab API processed");
 
                 List<JourneyPattern> allPatterns = objectMapper.readValue(journeyPatternsStr, new TypeReference<>() { });
                 journeyPatternsMap = allPatterns
                         .stream()
                         .collect(Collectors.groupingBy(JourneyPattern::getLineNumber));
+                LOGGER.info("Journey patterns data form Trafiklab API processed");
 
                 List<StopPoint> allStops = objectMapper.readValue(allStopsStr, new TypeReference<>() { });
                 busStops = allStops
                         .stream()
                         .filter(stop -> stop.getStopAreaTypeCode().equals(Codes.BUS.getStopAreaTypeCode())).
                         collect(Collectors.toList());
-
-                LOGGER.info("Application repository initiated");
+                LOGGER.info("Stops data form Trafiklab API processed");
+                LOGGER.info("Repository successfully initiated and populated with fetched data!");
             } catch (JsonProcessingException jpe) {
+                String errorMessage = "Error on repository initiation! Unable to process Trafiklab data!";
                 repositoryState.setStatusCode(RepositoryCodes.FAIL.getCode());
-                repositoryState.setBody("Unable to process Trafiklab data");
+                repositoryState.setBody(errorMessage);
+                LOGGER.error(errorMessage);
             }
-            LOGGER.info("Repository successfully initiated and populated with fetched data!");
         } else {
             LOGGER.error("Repository was not initiated! Bean created to start application.");
         }
     }
-
-    // Don't throw from here, repository should be initialized even for all the tea in China! :)
-    private RepositoryResponse fetchTrafiklabData(URI uri) {
-        String body = "";
-        int code = RepositoryCodes.SUCCESS.getCode();
-
+    // Access modifier is protected, because I want to test it
+    protected RepositoryResponse fetchTrafiklabData(URI uri) {
+        LOGGER.info("Fetching data from " + uri);
         ResponseEntity<String> response = commonRestTemplate.getForEntity(uri, String.class);
+        return processRepositoryResponse(response);
+    }
+
+    // Access modifier is protected, because I want to test it
+    protected RepositoryResponse processRepositoryResponse(ResponseEntity<String> response) {
+        int code = RepositoryCodes.SUCCESS.getCode();
+        String body;
         if (response.getStatusCode().is2xxSuccessful()){
             String responseBody = response.getBody();
             try {
@@ -153,7 +161,7 @@ public class BusLinesRepository {
     }
 
     private RepositoryResponse fetchStops() {
-        return fetchTrafiklabData(trafiklabUriResolver(apiKey, String.valueOf(Models.jour)));
+        return fetchTrafiklabData(trafiklabUriResolver(apiKey, String.valueOf(Models.stop)));
     }
 
     public RepositoryResponse getRepositoryState() {

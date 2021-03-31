@@ -1,4 +1,4 @@
-# SBAB programming assignment
+# Trafiklab API programming assignment
 
 ## Requirements
 ### Functional requirements
